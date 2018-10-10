@@ -2,6 +2,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias breload='clear; source ~/.bashrc'
 alias clc='clear'
 alias clean='make clean'
+alias clear='FIRST_PROMPT=true;clear'
 alias colours='for code in {0..255}; do num=`printf %03d $code`;echo -ne "\e[38;05;${num}m $num"; if [ $(($code % 16)) -eq 15 ]; then echo; fi; done'
 alias diff='colordiff -u'
 alias egrep='egrep --color=auto'

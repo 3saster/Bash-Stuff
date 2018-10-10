@@ -8,6 +8,11 @@ LIME="\[\e[38;5;10;1m\]"
 ORANGE="\[\e[38;5;208;1m\]"
 DEFAULT="\[\e[0;00m\]"
   
+if [ -z "$USER" ]
+then
+  USER=$USERNAME
+fi
+
 timer_now() {
   date +%s%N
 }
