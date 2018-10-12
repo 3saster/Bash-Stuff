@@ -6,6 +6,7 @@ RED="\[\e[38;5;196;1m\]"
 PURPLE="\[\e[38;5;164;1m\]"
 LIME="\[\e[38;5;10;1m\]"
 ORANGE="\[\e[38;5;208;1m\]"
+GRAY="\[\e[38;5;240;1m\]"
 DEFAULT="\[\e[0;00m\]"
 
 if [ -z "$USER" ]
@@ -54,28 +55,45 @@ repecho() {
 for ((i=0; i<$1; ++i)); 
   do echo -n "$2"; 
 done; 
-echo; 
+}
+
+trim_colour() {
+  echo -n "${1:2:${#1}-4}"
+}
+
+pre_command() {
+  if [ -z "$AT_PROMPT" ]; then
+    return
+  fi
+  unset AT_PROMPT
+
+  # Print gray line if command is entered
+  if [ "$this_command" != "prompt_command" ]; then
+    echo -e "$(trim_colour $GRAY)$(repecho $COLUMNS ―)$(trim_colour $DEFAULT)"
+  fi
 }
 
 prompt_command() {
   ret=$?;
   timer_stop
+  AT_PROMPT=1
   PS1=
   
-   # If just opened terminal, time/error code should not appear
+   # If just opened terminal, time/error code should not appear, only orange line
   if [ -z "$FIRST_PROMPT" ]; then
     FIRST_PROMPT=1
-  # Display time passed + return code if non-zero
-  else
-    PS1+="$LIGHTBLUE[${timer_show}] "
-    if [ "$ret" -ne 0 ] && [ "$previous_command" != "${FUNCNAME[0]}" ]; then
+    PS1+="$ORANGE$(repecho $COLUMNS ―)\n"
+  # Print gray line + timer + non-zero error code + orange line if command entered
+  elif [ "$previous_command" != "prompt_command" ]; then
+    PS1+="$(trim_colour $GRAY)$(repecho $COLUMNS ―)\n$(trim_colour $DEFAULT)$LIGHTBLUE[${timer_show}] "
+    if [ "$ret" -ne 0 ]; then
       PS1+="$RED[$ret] "
     fi
-    PS1+="\n"
+    PS1+="\n$ORANGE$(repecho $COLUMNS ―)\n"
   fi
   
   # Add bar to separate commands, host user name, and current directory
-  PS1+="$ORANGE$(repecho $COLUMNS ―)\n$YELLOW[$USER@$HOSTNAME] $PURPLE\w"
+  PS1+="$YELLOW[$USER@$HOSTNAME] $PURPLE\w"
   
   # If in git repository, display current branch
   GITBRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'`
@@ -87,5 +105,5 @@ prompt_command() {
   PS1+="$LIME \$$DEFAULT "
 }
 
-trap 'previous_command=$this_command; this_command=$BASH_COMMAND; timer_start' DEBUG
+trap 'previous_command=$this_command; this_command=$BASH_COMMAND; pre_command; timer_start' DEBUG
 PROMPT_COMMAND=prompt_command
