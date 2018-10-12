@@ -7,12 +7,12 @@ PURPLE="\[\e[38;5;164;1m\]"
 LIME="\[\e[38;5;10;1m\]"
 ORANGE="\[\e[38;5;208;1m\]"
 DEFAULT="\[\e[0;00m\]"
-  
+
 if [ -z "$USER" ]
 then
   USER=$USERNAME
 fi
-
+  
 timer_now() {
   date +%s%N
 }
@@ -57,21 +57,21 @@ done;
 echo; 
 }
 
-FIRST_PROMPT=true
 prompt_command() {
   ret=$?;
   timer_stop
   PS1=
   
-  # If just opened terminal, time/error code should not appear
-  if [ "$FIRST_PROMPT" = true ]; then
-    FIRST_PROMPT=false
-  # If return code is 0, display just the time elapsed, otherwise...
-  elif [ "$ret" -eq 0 ]; then
-    PS1+="$LIGHTBLUE[${timer_show}]\n"
-  # ...display both time and return (error) code
+   # If just opened terminal, time/error code should not appear
+  if [ -z "$FIRST_PROMPT" ]; then
+    FIRST_PROMPT=1
+  # Display time passed + return code if non-zero
   else
-    PS1+="$LIGHTBLUE[${timer_show}] $RED[$ret]\n"
+    PS1+="$LIGHTBLUE[${timer_show}] "
+    if [ "$ret" -ne 0 ]; then
+      PS1+="$RED[$ret] "
+    fi
+    PS1+="\n"
   fi
   
   # Add bar to separate commands, host user name, and current directory
