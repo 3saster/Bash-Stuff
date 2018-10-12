@@ -12,7 +12,7 @@ if [ -z "$USER" ]
 then
   USER=$USERNAME
 fi
-  
+
 timer_now() {
   date +%s%N
 }
@@ -68,7 +68,7 @@ prompt_command() {
   # Display time passed + return code if non-zero
   else
     PS1+="$LIGHTBLUE[${timer_show}] "
-    if [ "$ret" -ne 0 ]; then
+    if [ "$ret" -ne 0 ] && [ "$previous_command" != "${FUNCNAME[0]}" ]; then
       PS1+="$RED[$ret] "
     fi
     PS1+="\n"
@@ -87,5 +87,5 @@ prompt_command() {
   PS1+="$LIME \$$DEFAULT "
 }
 
-trap 'timer_start' DEBUG
+trap 'previous_command=$this_command; this_command=$BASH_COMMAND; timer_start' DEBUG
 PROMPT_COMMAND=prompt_command
