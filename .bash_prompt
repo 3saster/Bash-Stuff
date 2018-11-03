@@ -19,37 +19,37 @@ timer_start() {
 
 timer_stop() {
   local delta_us=$((($(timer_now) - $timer_start) / 1000))
-  
+
   local us=$((delta_us % 1000))
   local ms=$(((delta_us / 1000) % 1000))
   local s=$(((delta_us / 1000000) % 60))
   local m=$(((delta_us / 60000000) % 60))
   local h=$((delta_us / 3600000000))
-  
+
   # Goal: always show around 3 digits of accuracy
-  if ((h > 0)); then 
+  if ((h > 0)); then
     timer_show=${h}h\ ${m}m
-  elif ((m > 0)); then 
+  elif ((m > 0)); then
     timer_show=${m}m\ ${s}s
-  elif ((s >= 10)); then 
+  elif ((s >= 10)); then
     timer_show=${s}.$((ms / 100))\ s
-  elif ((s > 0)); then 
+  elif ((s > 0)); then
     timer_show=${s}.$(printf %03d $ms)\ s
-  elif ((ms >= 100)); then 
+  elif ((ms >= 100)); then
     timer_show=${ms}\ ms
-  elif ((ms > 0)); then 
+  elif ((ms > 0)); then
     timer_show=${ms}.$((us / 100))\ ms
-  else 
+  else
     timer_show=${us}\ µs
   fi
-  
+
   unset timer_start
 }
 
-repecho() { 
-for ((i=0; i<$1; ++i)); 
-  do echo -n "$2"; 
-done; 
+repecho() {
+for ((i=0; i<$1; ++i));
+  do echo -n "$2";
+done;
 }
 
 trim_colour() {
@@ -65,6 +65,9 @@ pre_command() {
   # Print gray line if command is entered
   if [ "$this_command" != "prompt_command" ]; then
     echo -e "$(trim_colour $GRAY)$(repecho $COLUMNS ―)$(trim_colour $DEFAULT)"
+  else
+    echo -ne "$(trim_colour $LIME)\$$(trim_colour $DEFAULT) "
+    SKIP=1
   fi
 }
 
@@ -73,6 +76,11 @@ prompt_command() {
   timer_stop
   AT_PROMPT=1
   PS1=
+
+  if [ -n "$SKIP" ]; then
+    unset SKIP
+    return
+  fi
   
    # If just opened terminal, time/error code should not appear, only orange line
   if [ -z "$FIRST_PROMPT" ]; then
@@ -86,18 +94,18 @@ prompt_command() {
     fi
     PS1+="\n$ORANGE$(repecho $COLUMNS ―)\n"
   fi
-  
+
   # Add bar to separate commands, host user name, and current directory
   PS1+="$YELLOW[\u@\h] $PURPLE\w"
-  
+
   # If in git repository, display current branch
   GITBRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'`
   if [[ ! -z $GITBRANCH ]]; then
     PS1+="$BLUE$GITBRANCH"
   fi
-  
+
   # Add $ sign right before command
-  PS1+="$LIME \$$DEFAULT "
+  PS1+="\n$LIME\$$DEFAULT "
 }
 
 trap 'previous_command=$this_command; this_command=$BASH_COMMAND; pre_command; timer_start' DEBUG
