@@ -3,7 +3,8 @@ LIGHTBLUE="\[\e[38;5;14;1m\]"
 BLUE="\[\e[38;5;27;1m\]"
 YELLOW="\[\e[38;5;220;1m\]"
 RED="\[\e[38;5;196;1m\]"
-PURPLE="\[\e[38;5;164;1m\]"
+DARKPINK="\[\e[38;5;164;1m\]"
+PURPLE="\[\e[38;5;105;1m\]"
 LIME="\[\e[38;5;10;1m\]"
 ORANGE="\[\e[38;5;208;1m\]"
 GRAY="\[\e[38;5;240;1m\]"
@@ -47,9 +48,9 @@ timer_stop() {
 }
 
 repecho() {
-for ((i=0; i<$1; ++i));
-  do echo -n "$2";
-done;
+  for ((i=0; i<$1; ++i));
+    do echo -n "$2";
+  done;
 }
 
 trim_colour() {
@@ -62,8 +63,9 @@ pre_command() {
   fi
   unset AT_PROMPT
 
-  # Print gray line if command is entered
+  # Print timestamp and gray line if command is entered
   if [ "$this_command" != "prompt_command" ]; then
+    echo -e "$(trim_colour $PURPLE)[`date '+%d-%b-%Y %H:%M:%S'`]"
     echo -e "$(trim_colour $GRAY)$(repecho $COLUMNS ―)$(trim_colour $DEFAULT)"
   else
     echo -ne "$(trim_colour $LIME)\$$(trim_colour $DEFAULT) "
@@ -96,15 +98,15 @@ prompt_command() {
   fi
 
   # Add bar to separate commands, host user name, and current directory
-  PS1+="$YELLOW[\u@\h] $PURPLE\w"
+  PS1+="$YELLOW[\u@\h] $DARKPINK\w"
 
   # If in git repository, display current branch
   GITBRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'`
-  if [[ ! -z $GITBRANCH ]]; then
+  if [[ -n $GITBRANCH ]]; then
     PS1+="$BLUE$GITBRANCH"
   fi
 
-  # Add $ sign right before command
+  # Add $ sign right before command on newline
   PS1+="\n$LIME\$$DEFAULT "
 }
 
